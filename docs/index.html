@@ -5,49 +5,97 @@
   <meta charset="utf-8">
   <title>WebGoat Project</title>
   <script src="https://cdn.jsdelivr.net/npm/marked@4.0.10/lib/marked.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    h2, h3 {
+      color: #555;
+    }
+    code {
+      background-color: #eee;
+      padding: 2px 4px;
+      font-size: 1.1em;
+    }
+    pre {
+      background-color: #eee;
+      padding: 10px;
+      border-left: 4px solid #333;
+      overflow-x: auto;
+    }
+    a {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    #readme-container {
+      margin-top: 20px;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
 
 <body>
-  <h1>WebGoat Project</h1>
+  <div class="container">
+    <h1>WebGoat Project</h1>
 
-  <h3>Version Information</h3>
-  <p>
-    This version of WebGoat is used as part of the <strong>LOG8100</strong> course: 
-    <em>DevSecOps - Opérations et dév. logiciel sécur</em>.
-    The project focuses on integrating CI/CD pipelines and security best practices in Kubernetes environments.
-  </p>
-  <p>
-    The Docker image for this project can be found at: 
-    <strong>"[Docker Image Address]"</strong>.
-  </p>
+    <h3>Version Information</h3>
+    <p>
+      This version of WebGoat is used as part of the <strong>LOG8100</strong> course: 
+      <em>DevSecOps - Opérations et dév. logiciel sécur</em>.
+      The project focuses on integrating CI/CD pipelines and security best practices in Kubernetes environments.
+    </p>
+    <p>
+      The Docker image for this project can be found at: 
+      <strong>"[Docker Image Address]"</strong>.
+    </p>
 
-  <h3>Link to Original WebGoat</h3>
-  <p>
-    For the source code of the original WebGoat project, visit the official GitHub repository: 
-    <a href="https://github.com/WebGoat/WebGoat" target="_blank">WebGoat GitHub</a>
-  </p>
+    <h3>Link to Original WebGoat</h3>
+    <p>
+      For the source code of the original WebGoat project, visit the official GitHub repository: 
+      <a href="https://github.com/WebGoat/WebGoat" target="_blank">WebGoat GitHub</a>
+    </p>
 
-  <h3>For More Information</h3>
-  <p>
-    To learn more about the WebGoat project, visit the official OWASP WebGoat page: 
-    <a href="https://owasp.org/www-project-webgoat/" target="_blank">OWASP WebGoat</a>
-  </p>
+    <h3>For More Information</h3>
+    <p>
+      To learn more about the WebGoat project, visit the official OWASP WebGoat page: 
+      <a href="https://owasp.org/www-project-webgoat/" target="_blank">OWASP WebGoat</a>
+    </p>
 
-  <div id="readme-container">
-    <p>Loading README...</p>
+    <div id="readme-container">
+      <p>Loading README...</p>
+    </div>
+
+    <script>
+      fetch('README.md')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('readme-container').innerHTML = marked.parse(data);
+        })
+        .catch(error => {
+          document.getElementById('readme-container').innerHTML = '<p>Failed to load README.md</p>';
+          console.error(error);
+        });
+    </script>
   </div>
-
-  <script>
-    fetch('README.md')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('readme-container').innerHTML = marked.parse(data);
-      })
-      .catch(error => {
-        document.getElementById('readme-container').innerHTML = '<p>Failed to load README.md</p>';
-        console.error(error);
-      });
-  </script>
 </body>
 
 </html>
