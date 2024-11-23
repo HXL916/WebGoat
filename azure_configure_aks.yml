@@ -1,0 +1,80 @@
+- name: Deploy Docker container to AKS
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    kubeconfig_path: "./kubeconfig"
+    docker_image: "dimario1/log8100_tp3:latest"
+    deployment_name: "webgoat"
+    service_name: "webgoat-service"
+
+  tasks:
+    - name: Retrieve kubeconfig for AKS
+      azure.azcollection.azure_rm_aks_info:
+        resource_group: rg-webgoat
+        name: webGoatCluster
+      register: kubeconfig
+
+    - name: Save kubeconfig to file
+      copy:
+        content: "{{ kubeconfig }}"
+        dest: "{{ kubeconfig_path }}"
+        mode: 0600
+
+    - name: Create Kubernetes deployment
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig[kubeconfig] }}"
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: "{{ deployment_name }}"
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: "{{ deployment_name }}"
+            template:
+              metadata:
+                labels:
+                  app: "{{ deployment_name }}"
+              spec:
+                containers:
+                - name: webgoat-container
+                  image: "{{ docker_image }}"
+                  ports:
+                  - containerPort: 80
+
+    - name: Expose deployment with a LoadBalancer service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "{{ service_name }}"
+          spec:
+            type: LoadBalancer
+            selector:
+              app: "{{ deployment_name }}"
+            ports:
+            - protocol: TCP
+              port: 80
+              targetPort: 80
+
+    - name: Wait for LoadBalancer to become available
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Service
+        namespace: default
+        name: "{{ service_name }}"
+      register: service_info
+      until: service_info.resources[0].status.loadBalancer.ingress[0].ip is defined
+      retries: 5
+      delay: 15
+
+    - name: Print the external IP
+      debug:
+        msg: "Webgoat is accessible at http://{{ service_info.resources[0].status.loadBalancer.ingress[0].ip }}"
