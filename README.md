@@ -9,6 +9,7 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
 ## SonarCloud
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)<br>
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)  
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&metric=coverage)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)  
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)

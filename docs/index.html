@@ -3,12 +3,52 @@
 
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0;url=https://owasp.org/www-project-webgoat/" />
+  <title>WebGoat Project</title>
   <link rel="canonical" href="https://owasp.org/www-project-webgoat/" />
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.10/lib/marked.min.js"></script>
 </head>
+
 <body>
-<h1>
-  The page been moved to <a href="https://owasp.org/www-project-webgoat/">https://owasp.org/www-project-webgoat/</a>
-</h1>
+  <h1>WebGoat Project</h1>
+
+  <h3>Version Information</h3>
+  <p>
+    This version of WebGoat is used as part of the <strong>LOG8100</strong> course: 
+    <em>DevSecOps - Opérations et dév. logiciel sécur</em>.
+    The project focuses on integrating CI/CD pipelines and security best practices in Kubernetes environments.
+  </p>
+  <p>
+    The Docker image for this project can be found at: 
+    <strong>"[Docker Image Address]"</strong>.
+  </p>
+
+  <h3>Link to Original WebGoat</h3>
+  <p>
+    For the source code of the original WebGoat project, visit the official GitHub repository: 
+    <a href="https://github.com/WebGoat/WebGoat" target="_blank">WebGoat GitHub</a>
+  </p>
+
+  <h3>For More Information</h3>
+  <p>
+    To learn more about the WebGoat project, visit the official OWASP WebGoat page: 
+    <a href="https://owasp.org/www-project-webgoat/" target="_blank">OWASP WebGoat</a>
+  </p>
+
+  <div id="readme-container">
+    <p>Loading README...</p>
+  </div>
+
+  <script>
+    fetch('README.md')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('readme-container').innerHTML = marked.parse(data);
+      })
+      .catch(error => {
+        document.getElementById('readme-container').innerHTML = '<p>Failed to load README.md</p>';
+        console.error(error);
+      });
+  </script>
 </body>
+
 </html>
