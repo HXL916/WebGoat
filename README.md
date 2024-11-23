@@ -13,6 +13,10 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&metric=coverage)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)  
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)
 
+## Version Specification
+
+This repository is a **school project** for the course *LOG8100: DevSecOps - Opérations et dév. logiciel sécur* and focuses on the integration of CI/CD pipelines and security best practices in Kubernetes environments. The project builds upon the original WebGoat repository by integrating additional workflows for a secure, automated deployment process in Kubernetes.
+
 
 # Introduction
 
@@ -22,10 +26,6 @@ application security lessons.
 This program is a demonstration of common server-side application flaws. The
 exercises are intended to be used by people to learn about application security and
 penetration testing techniques.
-
-## Version Specification
-
-This repository is a **school project** for the course *LOG8100: DevSecOps - Opérations et dév. logiciel sécur* and focuses on the integration of CI/CD pipelines and security best practices in Kubernetes environments. The project builds upon the original WebGoat repository by integrating additional workflows for a secure, automated deployment process in Kubernetes.
 
 
 **WARNING 1:** *While running this program your machine will be extremely
