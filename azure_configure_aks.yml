@@ -98,4 +98,4 @@
 
     - name: Print the external IP
       debug:
-        msg: "Webgoat is accessible at http://{{ service_info.resources[0].status.loadBalancer.ingress[0].ip }}"
+        msg: "Webgoat is accessible at http://{{ service_info.resources[0].status.loadBalancer.ingress[0].ip }}/WebGoat"
