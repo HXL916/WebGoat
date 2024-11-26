@@ -9,21 +9,41 @@
     service_name: "webgoat-service"
 
   tasks:
-    - name: Retrieve kubeconfig for AKS
-      azure.azcollection.azure_rm_aks_info:
-        resource_group: rg-webgoat
-        name: webGoatCluster
-      register: kubeconfig
+    - name: Login to Azure using service principal
+      shell: |
+        az login --service-principal \
+          --username "{{ lookup('env', 'AZURE_CLIENT_ID') }}" \
+          --password "{{ lookup('env', 'AZURE_CLIENT_SECRET') }}" \
+          --tenant "{{ lookup('env', 'AZURE_TENANT_ID') }}"
+      register: azure_login
+      changed_when: false
 
-    - name: Save kubeconfig to file
-      copy:
-        content: "{{ kubeconfig }}"
-        dest: "{{ kubeconfig_path }}"
-        mode: 0600
+    - name: Set Azure subscription
+      shell: |
+        az account set --subscription "{{ lookup('env', 'AZURE_SUBSCRIPTION_ID') }}"
+      register: azure_subscription
+      changed_when: false 
+
+    - name: Retrieve kubeconfig for AKS
+      command: >
+        az aks get-credentials
+        --resource-group rg-webgoat
+        --name webGoatCluster
+        --file "{{ kubeconfig_path }}"
+      args:
+        creates: "{{ kubeconfig_path }}"
+
+    - name: Create namespace
+      kubernetes.core.k8s:
+        api_version: v1
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Namespace
+        name: webgoat
 
     - name: Create Kubernetes deployment
       kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig[kubeconfig] }}"
+        kubeconfig: "{{ kubeconfig_path }}"
+        namespace: webgoat
         state: present
         definition:
           apiVersion: apps/v1
@@ -44,11 +64,12 @@
                 - name: webgoat-container
                   image: "{{ docker_image }}"
                   ports:
-                  - containerPort: 80
+                  - containerPort: 8080
 
     - name: Expose deployment with a LoadBalancer service
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
+        namespace: webgoat
         state: present
         definition:
           apiVersion: v1
@@ -62,13 +83,13 @@
             ports:
             - protocol: TCP
               port: 80
-              targetPort: 80
+              targetPort: 8080
 
     - name: Wait for LoadBalancer to become available
       kubernetes.core.k8s_info:
         kubeconfig: "{{ kubeconfig_path }}"
         kind: Service
-        namespace: default
+        namespace: webgoat
         name: "{{ service_name }}"
       register: service_info
       until: service_info.resources[0].status.loadBalancer.ingress[0].ip is defined
