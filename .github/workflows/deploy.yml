@@ -19,7 +19,9 @@ jobs:
 
     push_to_docker_registry:
         needs: get_modified_files
-        if: ${{ needs.get_modified_files.outputs.modified_files && contains(needs.get_modified_files.outputs.modified_files, 'Dockerfile') }}
+        if: |
+            ${{ needs.get_modified_files.outputs.modified_files &&
+                contains(needs.get_modified_files.outputs.modified_files, 'Dockerfile') }}
         runs-on: ubuntu-latest
         permissions:
             packages: write
@@ -72,7 +74,10 @@ jobs:
         needs:
             - get_modified_files
             - push_to_docker_registry
-        if: always()
+        if: |
+            ${{ needs.get_modified_files.outputs.modified_files &&
+                (contains(needs.get_modified_files.outputs.modified_files, 'Dockerfile') ||
+                contains(needs.get_modified_files.outputs.modified_files, 'main.tf')) }}
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -115,7 +120,11 @@ jobs:
             - get_modified_files
             - deploy_aks_with_terraform
             - push_to_docker_registry
-        if: always()
+        if: |
+            ${{ needs.get_modified_files.outputs.modified_files &&
+                (contains(needs.get_modified_files.outputs.modified_files, 'Dockerfile') ||
+                contains(needs.get_modified_files.outputs.modified_files, 'main.tf') ||
+                contains(needs.get_modified_files.outputs.modified_files, 'azure_configure_aks.yml')) }}
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
