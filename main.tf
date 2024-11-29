@@ -22,7 +22,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     node_count      = 1
     vm_size         = "Standard_B2s"
   }
-# hello there
+
   identity {
     type = "SystemAssigned"
   }
