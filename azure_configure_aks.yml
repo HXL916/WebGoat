@@ -99,3 +99,48 @@
     - name: Print the external IP
       debug:
         msg: "Webgoat is accessible at http://{{ service_info.resources[0].status.loadBalancer.ingress[0].ip }}/WebGoat"
+
+    - name: Add Prometheus Helm repository
+      command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+    - name: Add Grafana Helm repository
+      command: helm repo add grafana https://grafana.github.io/helm-charts
+
+    - name: Update Helm repositories
+      command: helm repo update
+
+    - name: Install Prometheus in the webgoat namespace
+      command: >
+        helm upgrade --install prometheus prometheus-community/prometheus
+        --namespace webgoat
+        --create-namespace
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+    - name: Install Grafana in the webgoat namespace
+      command: >
+        helm upgrade --install grafana grafana/grafana
+        --namespace webgoat
+        --create-namespace
+        --set adminPassword=admin
+        --set service.type=LoadBalancer
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+    - name: Verify Prometheus deployment
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: v1
+        kind: Pod
+        namespace: webgoat
+        label_selectors:
+          - "app=prometheus"
+
+    - name: Verify Grafana deployment
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: v1
+        kind: Pod
+        namespace: webgoat
+        label_selectors:
+          - "app.kubernetes.io/name=grafana"
