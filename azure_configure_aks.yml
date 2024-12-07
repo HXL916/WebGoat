@@ -114,18 +114,64 @@
         helm upgrade --install prometheus prometheus-community/prometheus
         --namespace webgoat
         --create-namespace
+        --wait
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
 
-    - name: Install Grafana in the webgoat namespace
-      command: >
-        helm upgrade --install grafana grafana/grafana
-        --namespace webgoat
-        --create-namespace
-        --set adminPassword=admin
-        --set service.type=LoadBalancer
-      environment:
-        KUBECONFIG: "{{ kubeconfig_path }}"
+    - name: Retrieve Prometheus service URL
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Service
+        namespace: webgoat
+        name: prometheus-server
+      register: prometheus_service_info
+
+    - name: Set Prometheus URL
+      set_fact:
+        prometheus_url: >-
+          {% if prometheus_service_info.resources[0].spec.type == 'LoadBalancer' %}
+            http://{{ prometheus_service_info.resources[0].status.loadBalancer.ingress[0].ip }}:{{ prometheus_service_info.resources[0].spec.ports[0].port }}
+          {% elif prometheus_service_info.resources[0].spec.type == 'NodePort' %}
+            http://<Node_IP>:{{ prometheus_service_info.resources[0].spec.ports[0].nodePort }}
+          {% else %}
+            http://{{ prometheus_service_info.resources[0].spec.clusterIP }}:{{ prometheus_service_info.resources[0].spec.ports[0].port }}
+          {% endif %}
+
+    - name: Debug Prometheus URL
+      debug:
+        msg: "Prometheus is accessible at {{ prometheus_url }}"
+
+    - name: Deploy Grafana Kubernetes Monitoring Helm Chart
+      kubernetes.core.helm:
+        name: grafana-k8s-monitoring
+        chart_ref: grafana/k8s-monitoring
+        release_namespace: webgoat
+        chart_version: 0.2.5
+        values:
+          cluster:
+            name: webGoatCluster
+          externalServices:
+            prometheus:
+              host: "{{ prometheus_url }}"
+              basicAuth:
+                username: admin
+                password: admin
+          opencost:
+            opencost:
+              exporter:
+                defaultClusterId: webGoatCluster
+              prometheus:
+                external:
+                  url: "{{ prometheus_url }}/api/prom"
+          traces:
+            enabled: true
+          grafana-agent:
+            agent:
+              extraPorts:
+                - name: otlp-traces
+                  port: 4317
+                  targetPort: 4317
+                  protocol: TCP
 
     - name: Verify Prometheus deployment
       kubernetes.core.k8s_info:
