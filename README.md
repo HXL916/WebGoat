@@ -9,169 +9,64 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
 ## SonarCloud
+
 [![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)<br>
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)  
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&metric=coverage)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)  
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat)
 
-## Version Specification
+## Introduction
 
-This repository is a **school project** for the course *LOG8100: DevSecOps - Opérations et dév. logiciel sécur* and focuses on the integration of CI/CD pipelines and security best practices in Kubernetes environments. The project builds upon the original WebGoat repository by integrating additional workflows for a secure, automated deployment process in Kubernetes.
+This repository is a **school project** for the course _LOG8100: DevSecOps - Opérations et dév. logiciel sécur_ and focuses on the integration of CI/CD pipelines and security best practices in Kubernetes environments. The project builds upon the original WebGoat repository by integrating additional workflows for a secure, automated deployment process in Kubernetes.
 
+## CI/CD pipeline steps
 
-# Introduction
+The pipeline is triggered when a **deployment** event is happening.
 
-WebGoat is a deliberately insecure web application maintained by [OWASP](http://www.owasp.org/) designed to teach web
-application security lessons.
+### Docker Image build and vulnerability scan
 
-This program is a demonstration of common server-side application flaws. The
-exercises are intended to be used by people to learn about application security and
-penetration testing techniques.
+The first step in the pipeline is to build the project and create a Docker image.  
+Afterwards, we perform a vulnerability scan on the image using Trivy and push the image to Docker Hub. The result of the Trivy scan is uploaded as an artifact and will remain in the repository for 30 days (Usually we would stop the deployment if the scan found any **High** or **Critical** vulnerabilities but here we continue the deployment to prove that our CI/CD pipeline works).
 
+### Deploy AKS Cluster with Terraform
 
-**WARNING 1:** *While running this program your machine will be extremely
-vulnerable to attack. You should disconnect from the Internet while using
-this program.*  WebGoat's default configuration binds to localhost to minimize
-the exposure.
+After pushing the new version of our Docker image to the Docker Hub, we log in to Azure using a service principal. Once logged in, we verify if there's already an existing AKS and workspace resources from a previous deployment and delete them if they exist (we could also choose to keep the previous deployment in case we introduced a problem and need to do a rollback but here we delete the previous resources because we have limited Azure credits).  
+Once the previous resources are deleted, we initialize Terraform and validate the script configuration in _main.tf_ before applying it to deploy the AKS cluster.
 
-**WARNING 2:** *This program is for educational purposes only. If you attempt
-these techniques without authorization, you are very likely to get caught. If
-you are caught engaging in unauthorized hacking, most companies will fire you.
-Claiming that you were doing security research will not work as that is the
-first thing that all hackers claim.*
+### Deploy Docker container with Ansible
 
-![WebGoat](docs/images/webgoat.png)
+Once the AKS cluster is deployed, we install Ansible and the required collections in the VM running the workflow and we use the Ansible playbook _azure_configure_aks.yml_ to deploy the Docker container to the AKS cluster using the image we pushed to Docker Hub in the first step as well as install **Prometheus** and **Grafana** and set them up to monitor the new AKS cluster.
 
-# Installation instructions:
+## Kubernetes Cluster configuration
 
-For more details check [the Contribution guide](/CONTRIBUTING.md)
+Cluster details:
 
-## 1. Run using Docker
+-   Name: `webGoatCluster`
+-   Region: `Canada Central`
+-   VM Size: `Standard_B1ms`
+-   Auto-scaling: between 1 and 3 nodes based on traffic
 
-Already have a browser and ZAP and/or Burp installed on your machine in this case you can run the WebGoat image directly using Docker.
+Log Analytics:
 
-Every release is also published on [DockerHub](https://hub.docker.com/r/webgoat/webgoat).
+-   A log analytics workspace (`aks-log-workspace`) is created for monitoring
 
-```shell
-docker run -it -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 webgoat/webgoat
-```
+## Terraform manual installation
 
-For some lessons you need the container run in the same timezone. For this you can set the TZ environment variable.
-E.g.
+The execution of the Terraform script is entirely automated in the Github Action but if you need to run it locally for any reason here are the recommended steps:
 
-```shell
-docker run -it -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 -e TZ=America/Boise webgoat/webgoat
-```
+-   Install the latest version of Terraform CLI
+-   Initializes a working directory to use with Terraform using `terraform init`
+-   Optionally, use `terraform validate` to check the configuration file for syntax errors
+-   Optionally, run `terraform plan` to preview the changes Terraform will make to your infrastructure before applying them
+-   Finally, apply the changes using `terraform apply`
 
-If you want to use OWASP ZAP or another proxy, you can no longer use 127.0.0.1 or localhost. but
-you can use custom host entries. For example:
-
-```shell
-127.0.0.1 www.webgoat.local www.webwolf.local
-```
-
-Then you can run the container with:
-
-```shell
-docker run -it -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 -e WEBGOAT_HOST=www.webgoat.local -e WEBWOLF_HOST=www.webwolf.local -e TZ=America/Boise webgoat/webgoat
-```
-
-Then visit http://www.webgoat.local:8080/WebGoat/ and http://www.webwolf.local:9090/WebWolf/
-
-## 2. Run using Docker with complete Linux Desktop
-
-Instead of installing tools locally we have a complete Docker image based on running a desktop in your browser. This way you only have to run a Docker image which will give you the best user experience.
-
-```shell
-docker run -p 127.0.0.1:3000:3000 webgoat/webgoat-desktop
-```
-
-## 3. Standalone
-
-Download the latest WebGoat release from [https://github.com/WebGoat/WebGoat/releases](https://github.com/WebGoat/WebGoat/releases)
-
-```shell
-export TZ=Europe/Amsterdam # or your timezone
-java -Dfile.encoding=UTF-8 -jar webgoat-2023.8.jar
-```
-
-Click the link in the log to start WebGoat.
-
-### 3.1 Running on a different port
-
-If for some reason you want to run WebGoat on a different port, you can do so by adding the following parameter:
-
-```shell
-java -jar webgoat-2023.8.jar --webgoat.port=8001 --webwolf.port=8002
-```
-
-For a full overview of all the parameters you can use, please check the [WebGoat properties file](webgoat-container/src/main/resources/application-{webgoat, webwolf}.properties).
-
-## 4. Run from the sources
-
-### Prerequisites:
-
-* Java 17 or 21
-* Your favorite IDE
-* Git, or Git support in your IDE
-
-Open a command shell/window:
-
-```Shell
-git clone git@github.com:WebGoat/WebGoat.git
-```
-
-Now let's start by compiling the project.
-
-```Shell
-cd WebGoat
-git checkout <<branch_name>>
-# On Linux/Mac:
-./mvnw clean install
-
-# On Windows:
-./mvnw.cmd clean install
-
-# Using docker or podman, you can than build the container locally
-docker build -f Dockerfile . -t webgoat/webgoat
-```
-
-Now we are ready to run the project. WebGoat is using Spring Boot.
-
-```Shell
-# On Linux/Mac:
-./mvnw spring-boot:run
-# On Windows:
-./mvnw.cmd spring-boot:run
+When running `terraform init`, `terraform plan` and `terraform apply`, you need to pass some variables which are needed for the script to log in to Azure. Before running these commands, get the following secrets and store them in a `.tfvars` file:
 
 ```
-
-... you should be running WebGoat on http://localhost:8080/WebGoat momentarily.
-
-Note: The above link will redirect you to login page if you are not logged in. LogIn/Create account to proceed.
-
-To change the IP address add the following variable to the `WebGoat/webgoat-container/src/main/resources/application.properties` file:
-
-```
-server.address=x.x.x.x
+ARM_SUBSCRIPTION_ID="your-subscription-id"
+ARM_CLIENT_ID="your-client-id"
+ARM_CLIENT_SECRET="your-client-secret"
+ARM_TENANT_ID="your-tenant-id"
 ```
 
-## 4. Run with custom menu
-
-For specialist only. There is a way to set up WebGoat with a personalized menu. You can leave out some menu categories or individual lessons by setting certain environment variables.
-
-For instance running as a jar on a Linux/macOS it will look like this:
-
-```Shell
-export TZ=Europe/Amsterdam # or your timezone
-export EXCLUDE_CATEGORIES="CLIENT_SIDE,GENERAL,CHALLENGE"
-export EXCLUDE_LESSONS="SqlInjectionAdvanced,SqlInjectionMitigations"
-java -jar target/webgoat-2023.8-SNAPSHOT.jar
-```
-
-Or in a docker run it would (once this version is pushed into docker hub) look like this:
-
-```Shell
-docker run -d -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 -e EXCLUDE_CATEGORIES="CLIENT_SIDE,GENERAL,CHALLENGE" -e EXCLUDE_LESSONS="SqlInjectionAdvanced,SqlInjectionMitigations" webgoat/webgoat
-```
-
+Afterwards, you can run the command with `terraform init -var-file="terraform.tfvars"`
