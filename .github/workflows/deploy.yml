@@ -92,24 +92,6 @@ jobs:
                           echo "webGoatCluster does not exist."
                       fi
 
-            - name: Delete existing Workspace resource
-              uses: azure/cli@v2
-              with:
-                  azcliversion: latest
-                  inlineScript: |
-                      WORKSPACE_EXISTS=$(az monitor log-analytics workspace list \
-                        --query "[?name=='aks-log-workspace'] | length(@)")
-                      if [ "$WORKSPACE_EXISTS" -eq 1 ]; then
-                          echo "Found Workspace: aks-log-workspace"
-                          echo "Deleting Workspace"
-                          az monitor log-analytics workspace delete \
-                            --resource-group "rg-webgoat" --workspace-name "aks-log-workspace" \
-                            --yes
-                          echo "Workspace deleted."
-                      else
-                          echo "aks-log-workspace does not exist."
-                      fi
-
             - name: Set up Terraform
               uses: hashicorp/setup-terraform@v3
               with:
