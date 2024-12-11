@@ -77,7 +77,7 @@ resource "azurerm_monitor_data_collection_rule" "dcr" {
   data_sources {
     prometheus_forwarder {
       streams   = [ "Microsoft-PrometheusMetrics" ]
-      name      = abs("PrometheusDataSource")
+      name      = "PrometheusDataSource"
     }
   }
 

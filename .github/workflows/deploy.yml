@@ -7,6 +7,7 @@ on:
 
 jobs:
     push_to_docker_registry:
+        if: true == false
         runs-on: ubuntu-latest
         permissions:
             packages: write
