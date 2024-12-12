@@ -1,4 +1,4 @@
-name: Publish Docker Image and Deploy to Azure.
+name: Publish Docker Image and Deploy to Azure
 
 on:
     push:
