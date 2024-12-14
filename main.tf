@@ -219,17 +219,15 @@ EOF
   }
 }
 
-resource "kubernetes_namespace" "kubecost" {
-  metadata {
-    name = "kubecost"
-  }
-}
-
 resource "helm_release" "kubecost" {
   name = "kubecost"
-  namespace = "kubecost"
   chart = "cost-analyzer"
   repository = "https://kubecost.github.io/cost-analyzer/"
+  create_namespace = true
+
+  depends_on = [ 
+    azurerm_kubernetes_cluster.aks
+  ]
 
   set {
     name = "kubecostProductConfigs.clusterName"
