@@ -84,6 +84,7 @@ jobs:
                   azcliversion: latest
                   inlineScript: |
                       EXISTING_RG=$(az group show --name rg-webgoat --query "[].name" -o tsv)
+                      echo "$EXISTING_RG"
                       if [ "$EXISTING_RG" == "rg-webgoat" ]; then
                           echo "Found resource group: $EXISTING_RG"
                           echo "Deleting resource group: $EXISTING_ARG"
