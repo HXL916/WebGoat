@@ -218,3 +218,26 @@ sum(rate(node_cpu_seconds_total{job="node",mode!="idle",mode!="iowait",mode!="st
 EOF
   }
 }
+
+resource "kubernetes_namespace" "kubecost" {
+  metadata {
+    name = "kubecost"
+  }
+}
+
+resource "helm_release" "kubecost" {
+  name = "kubecost"
+  namespace = "kubecost"
+  chart = "cost-analyzer"
+  repository = "https://kubecost.github.io/cost-analyzer/"
+
+  set {
+    name = "kubecostProductConfigs.clusterName"
+    value = "webGoatCluster"
+  }
+
+  set {
+    name = "kubecostProductConfigs.currencyCode"
+    value = "CAD"
+  }
+}
