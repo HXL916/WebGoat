@@ -11,11 +11,20 @@ provider "azurerm" {
   features {}
 }
 
+resource "azurerm_resource_group" "rg-webgoat" {
+  name = "rg-webgoat"
+  location = "East US"
+}
+
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "webGoatCluster"
   location            = "Canada Central"
   resource_group_name = "rg-webgoat"
   dns_prefix          = "webgoatk8cluster"
+
+  depends_on = [
+    azurerm_resource_group.rg-webgoat
+  ]
 
   default_node_pool {
     name                    = "default"
