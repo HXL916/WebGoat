@@ -55,6 +55,8 @@ resource "azurerm_monitor_workspace" "amw" {
   name                  = "aks-monitor-workspace"
   location              = "Canada Central"
   resource_group_name   = "rg-webgoat"
+
+  depends_on = [ azurerm_resource_group.rg-webgoat ]
 }
 
 resource "azurerm_monitor_data_collection_endpoint" "dce" {
@@ -62,6 +64,8 @@ resource "azurerm_monitor_data_collection_endpoint" "dce" {
   resource_group_name   = "rg-webgoat"
   location              = "Canada Central"
   kind                  = "Linux"
+
+  depends_on = [ azurerm_resource_group.rg-webgoat ]
 }
 
 resource "azurerm_monitor_data_collection_rule" "dcr" {
