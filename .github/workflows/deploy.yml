@@ -83,7 +83,7 @@ jobs:
               with:
                   azcliversion: latest
                   inlineScript: |
-                      EXISTING_RG=$(az group show --name rg-webgoat --query "name" -o tsv)
+                      EXISTING_RG=$(az group list --query "[?name=='rg-webgoat'].name" -o tsv)
                       if [ "$EXISTING_RG" == "rg-webgoat" ]; then
                           echo "Found RG: $EXISTING_RG"
                           echo "Deleting RG: $EXISTING_RG"
