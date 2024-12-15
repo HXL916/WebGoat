@@ -78,19 +78,19 @@ jobs:
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-            - name: Delete existing AKS resource
+            - name: Delete existing resource group
               uses: azure/cli@v2
               with:
                   azcliversion: latest
                   inlineScript: |
-                      EXISTING_AKS=$(az aks list --resource-group "rg-webgoat" --query "[].name" -o tsv)
-                      if [ "$EXISTING_AKS" == "webGoatCluster" ]; then
-                          echo "Found AKS Cluster: $EXISTING_AKS"
-                          echo "Deleting AKS Cluster: $EXISTING_AKS"
-                          az aks delete --resource-group "rg-webgoat" --name "$EXISTING_AKS" --yes
-                          echo "AKS cluster deleted."
+                      EXISTING_RG=$(az group show --name rg-webgoat --query "name" -o tsv)
+                      if [ "$EXISTING_RG" == "rg-webgoat" ]; then
+                          echo "Found RG: $EXISTING_RG"
+                          echo "Deleting RG: $EXISTING_RG"
+                          az group delete --name "rg-webgoat" --yes
+                          echo "RG deleted."
                       else
-                          echo "webGoatCluster does not exist."
+                          echo "RG does not exist."
                       fi
 
             - name: Set up Terraform
