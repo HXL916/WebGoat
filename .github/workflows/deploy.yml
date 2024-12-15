@@ -7,7 +7,6 @@ on:
 
 jobs:
     push_to_docker_registry:
-        if: true == false
         runs-on: ubuntu-latest
         permissions:
             packages: write
@@ -66,7 +65,6 @@ jobs:
                   retention-days: 30
 
     deploy_aks_with_terraform:
-        if: true == false
         needs:
             - push_to_docker_registry
         runs-on: ubuntu-latest
@@ -127,9 +125,9 @@ jobs:
               run: terraform apply -input=false tfplan
 
     deploy_docker_with_ansible:
-        #needs:
-        #- deploy_aks_with_terraform
-        #- push_to_docker_registry
+        needs:
+            - deploy_aks_with_terraform
+            - push_to_docker_registry
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
