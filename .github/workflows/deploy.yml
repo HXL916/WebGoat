@@ -78,6 +78,21 @@ jobs:
               with:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+            - name: Delete existing AKS resource
+              uses: azure/cli@v2
+              with:
+                  azcliversion: latest
+                  inlineScript: |
+                      EXISTING_AKS=$(az aks list --resource-group "rg-webgoat" --query "[].name" -o tsv)
+                      if [ "$EXISTING_AKS" == "webGoatCluster" ]; then
+                          echo "Found AKS Cluster: $EXISTING_AKS"
+                          echo "Deleting AKS Cluster: $EXISTING_AKS"
+                          az aks delete --resource-group "rg-webgoat" --name "$EXISTING_AKS" --yes
+                          echo "AKS cluster deleted."
+                      else
+                          echo "webGoatCluster does not exist."
+                      fi
+
             - name: Set up Terraform
               uses: hashicorp/setup-terraform@v3
               with:
@@ -90,14 +105,6 @@ jobs:
                   ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
                   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
               run: terraform init -input=false
-
-            - name: Destroy previous deployment
-              env:
-                  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-                  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-                  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-                  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-              run: terraform destroy -auto-approve
 
             - name: Validate Terraform
               run: terraform validate
