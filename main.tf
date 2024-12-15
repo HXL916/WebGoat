@@ -5,10 +5,10 @@ terraform {
       version = ">=3.0.0"
     }
     kubernetes = {
-        version = ">=2.1.0"
+      version = ">=2.1.0"
     }
     helm = {
-        version = ">=2.1.2"
+      version = ">=2.1.2"
     }
   }
 }
@@ -18,7 +18,7 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "rg-webgoat" {
-  name = "rg-webgoat"
+  name     = "rg-webgoat"
   location = "East US"
 }
 
@@ -28,14 +28,14 @@ resource "azurerm_kubernetes_cluster" "aks" {
   resource_group_name = "rg-webgoat"
   dns_prefix          = "webgoatk8cluster"
 
-  depends_on = [ azurerm_resource_group.rg-webgoat ]
+  depends_on = [azurerm_resource_group.rg-webgoat]
 
   default_node_pool {
-    name                    = "default"
-    vm_size                 = "Standard_B2s"
-    auto_scaling_enabled    = true
-    min_count               = 1
-    max_count               = 3
+    name                 = "default"
+    vm_size              = "Standard_B2s"
+    auto_scaling_enabled = true
+    min_count            = 1
+    max_count            = 3
   }
 
   identity {
@@ -72,50 +72,50 @@ provider "helm" {
 
 # Create Log analytics workspace
 resource "azurerm_monitor_workspace" "amw" {
-  name                  = "aks-monitor-workspace"
-  location              = "Canada Central"
-  resource_group_name   = "rg-webgoat"
-  depends_on = [ azurerm_resource_group.rg-webgoat ]
+  name                = "aks-monitor-workspace"
+  location            = "Canada Central"
+  resource_group_name = "rg-webgoat"
+  depends_on          = [azurerm_resource_group.rg-webgoat]
 }
 
 resource "azurerm_monitor_data_collection_endpoint" "dce" {
-  name                  = "dataCollectionEndpoint"
-  resource_group_name   = "rg-webgoat"
-  location              = "Canada Central"
-  kind                  = "Linux"
-  depends_on = [ azurerm_resource_group.rg-webgoat ]
+  name                = "dataCollectionEndpoint"
+  resource_group_name = "rg-webgoat"
+  location            = "Canada Central"
+  kind                = "Linux"
+  depends_on          = [azurerm_resource_group.rg-webgoat]
 }
 
 resource "azurerm_monitor_data_collection_rule" "dcr" {
-  name                          = "dataCollectionRule"
-  resource_group_name           = "rg-webgoat"
-  location                      = "Canada Central"
-  data_collection_endpoint_id   = azurerm_monitor_data_collection_endpoint.dce.id
-  kind                          = "Linux"
+  name                        = "dataCollectionRule"
+  resource_group_name         = "rg-webgoat"
+  location                    = "Canada Central"
+  data_collection_endpoint_id = azurerm_monitor_data_collection_endpoint.dce.id
+  kind                        = "Linux"
 
   destinations {
     monitor_account {
-      monitor_account_id    = azurerm_monitor_workspace.amw.id
-      name                  = "MonitoringAccount1"
+      monitor_account_id = azurerm_monitor_workspace.amw.id
+      name               = "MonitoringAccount1"
     }
   }
 
   data_flow {
-    streams         = [ "Microsoft-PrometheusMetrics" ]
-    destinations    = [ "MonitoringAccount1" ]
+    streams      = ["Microsoft-PrometheusMetrics"]
+    destinations = ["MonitoringAccount1"]
   }
 
   data_sources {
     prometheus_forwarder {
-      streams   = [ "Microsoft-PrometheusMetrics" ]
-      name      = "PrometheusDataSource"
+      streams = ["Microsoft-PrometheusMetrics"]
+      name    = "PrometheusDataSource"
     }
   }
 
   description = "DCR for Azure Monitor Metrics Profile (Managed Prometheus)"
-  depends_on = [ 
+  depends_on = [
     azurerm_monitor_data_collection_endpoint.dce,
-    azuazurerm_resource_group.rg-webgoat
+    azurerm_resource_group.rg-webgoat
   ]
 }
 
@@ -135,7 +135,7 @@ resource "azurerm_dashboard_grafana" "grafana" {
   location              = "Canada Central"
   grafana_major_version = "10"
 
-  depends_on = [ azurerm_resource_group.rg-webgoat ]
+  depends_on = [azurerm_resource_group.rg-webgoat]
 
   identity {
     type = "SystemAssigned"
@@ -154,9 +154,9 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "node_recording_rules_rul
   description         = "Node Recording Rules Rule Group"
   rule_group_enabled  = true
   interval            = "PT1M"
-  scopes              = [azurerm_monitor_workspace.amw.id,azurerm_kubernetes_cluster.aks.id]
+  scopes              = [azurerm_monitor_workspace.amw.id, azurerm_kubernetes_cluster.aks.id]
 
-  depends_on = [ azurerm_resource_group.rg-webgoat ]
+  depends_on = [azurerm_resource_group.rg-webgoat]
 
   rule {
     enabled    = true
@@ -189,9 +189,9 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "kubernetes_recording_rul
   description         = "Kubernetes Recording Rules Rule Group"
   rule_group_enabled  = true
   interval            = "PT1M"
-  scopes              = [azurerm_monitor_workspace.amw.id,azurerm_kubernetes_cluster.aks.id]
+  scopes              = [azurerm_monitor_workspace.amw.id, azurerm_kubernetes_cluster.aks.id]
 
-  depends_on = [ azurerm_resource_group.rg-webgoat ]
+  depends_on = [azurerm_resource_group.rg-webgoat]
 
   rule {
     enabled    = true
@@ -217,23 +217,18 @@ EOF
 }
 
 resource "helm_release" "kubecost" {
-  name = "kubecost"
-  chart = "cost-analyzer"
-  repository = "https://kubecost.github.io/cost-analyzer/"
+  name             = "kubecost"
+  chart            = "cost-analyzer"
+  repository       = "https://kubecost.github.io/cost-analyzer/"
   create_namespace = true
 
   set {
-    name = "kubecostProductConfigs.clusterName"
+    name  = "kubecostProductConfigs.clusterName"
     value = "webGoatCluster"
   }
 
   set {
-    name = "kubecostProductConfigs.currencyCode"
+    name  = "kubecostProductConfigs.currencyCode"
     value = "CAD"
-  }
-
-  set {
-    name  = "kubecostProductConfigs.azureSubscriptionID"
-    value = data.azurerm_subscription.current.id
   }
 }
