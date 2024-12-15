@@ -11,10 +11,10 @@ provider "azurerm" {
   features {}
 }
 
-#resource "azurerm_resource_group" "rg-webgoat" {
-#  name = "rg-webgoat"
-#  location = "East US"
-#}
+resource "azurerm_resource_group" "rg-webgoat" {
+  name = "rg-webgoat"
+  location = "East US"
+}
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "webGoatCluster"
@@ -50,6 +50,26 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 }
 
+resource "helm_release" "kubecost" {
+  name = "kubecost"
+  chart = "cost-analyzer"
+  repository = "https://kubecost.github.io/cost-analyzer/"
+  create_namespace = true
+
+  depends_on = [ 
+    azurerm_kubernetes_cluster.aks
+  ]
+
+  set {
+    name = "kubecostProductConfigs.clusterName"
+    value = "webGoatCluster"
+  }
+
+  set {
+    name = "kubecostProductConfigs.currencyCode"
+    value = "CAD"
+  }
+}
 # Create Log analytics workspace
 resource "azurerm_monitor_workspace" "amw" {
   name                  = "aks-monitor-workspace"
@@ -231,33 +251,5 @@ EOF
     expression = <<EOF
 sum(rate(node_cpu_seconds_total{job="node",mode!="idle",mode!="iowait",mode!="steal"}[5m])) by (cluster) /count(sum(node_cpu_seconds_total{job="node"}) by (cluster, instance, cpu)) by (cluster)
 EOF
-  }
-}
-
-provider "kubernetes" {
-  host = azurerm_kubernetes_cluster.aks.kube_config[0].host
-  client_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_certificate)
-  client_key = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_key)
-  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].cluster_ca_certificate)
-}
-
-resource "helm_release" "kubecost" {
-  name = "kubecost"
-  chart = "cost-analyzer"
-  repository = "https://kubecost.github.io/cost-analyzer/"
-  create_namespace = true
-
-  depends_on = [ 
-    azurerm_kubernetes_cluster.aks
-  ]
-
-  set {
-    name = "kubecostProductConfigs.clusterName"
-    value = "webGoatCluster"
-  }
-
-  set {
-    name = "kubecostProductConfigs.currencyCode"
-    value = "CAD"
   }
 }
