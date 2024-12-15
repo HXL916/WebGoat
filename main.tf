@@ -112,12 +112,6 @@ resource "azurerm_dashboard_grafana" "grafana" {
   }
 }
 
-resource "azurerm_role_assignment" "datareaderrole" {
-  scope              = azurerm_monitor_workspace.amw.id
-  role_definition_id = "/subscriptions/${split("/", azurerm_monitor_workspace.amw.id)[2]}/providers/Microsoft.Authorization/roleDefinitions/b0d8363b-8ddd-447d-831f-62ca05bff136"
-  principal_id       = azurerm_dashboard_grafana.grafana.identity.0.principal_id
-}
-
 resource "azurerm_monitor_alert_prometheus_rule_group" "node_recording_rules_rule_group" {
   name                = "NodeRecordingRulesRuleGroup-webGoatCluster"
   location            = "Canada Central"
