@@ -50,26 +50,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 }
 
-resource "helm_release" "kubecost" {
-  name = "kubecost"
-  chart = "cost-analyzer"
-  repository = "https://kubecost.github.io/cost-analyzer/"
-  create_namespace = true
-
-  depends_on = [ 
-    azurerm_kubernetes_cluster.aks
-  ]
-
-  set {
-    name = "kubecostProductConfigs.clusterName"
-    value = "webGoatCluster"
-  }
-
-  set {
-    name = "kubecostProductConfigs.currencyCode"
-    value = "CAD"
-  }
-}
 # Create Log analytics workspace
 resource "azurerm_monitor_workspace" "amw" {
   name                  = "aks-monitor-workspace"
@@ -149,8 +129,6 @@ resource "azurerm_role_assignment" "datareaderrole" {
   scope              = azurerm_monitor_workspace.amw.id
   role_definition_id = "/subscriptions/${split("/", azurerm_monitor_workspace.amw.id)[2]}/providers/Microsoft.Authorization/roleDefinitions/b0d8363b-8ddd-447d-831f-62ca05bff136"
   principal_id       = azurerm_dashboard_grafana.grafana.identity.0.principal_id
-
-  depends_on = [ azurerm_monitor_workspace.amw ]
 }
 
 resource "azurerm_monitor_alert_prometheus_rule_group" "node_recording_rules_rule_group" {
@@ -251,5 +229,26 @@ EOF
     expression = <<EOF
 sum(rate(node_cpu_seconds_total{job="node",mode!="idle",mode!="iowait",mode!="steal"}[5m])) by (cluster) /count(sum(node_cpu_seconds_total{job="node"}) by (cluster, instance, cpu)) by (cluster)
 EOF
+  }
+}
+
+resource "helm_release" "kubecost" {
+  name = "kubecost"
+  chart = "cost-analyzer"
+  repository = "https://kubecost.github.io/cost-analyzer/"
+  create_namespace = true
+
+  depends_on = [ 
+    azurerm_kubernetes_cluster.aks
+  ]
+
+  set {
+    name = "kubecostProductConfigs.clusterName"
+    value = "webGoatCluster"
+  }
+
+  set {
+    name = "kubecostProductConfigs.currencyCode"
+    value = "CAD"
   }
 }
