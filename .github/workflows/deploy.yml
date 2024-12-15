@@ -126,6 +126,7 @@ jobs:
               run: terraform apply -input=false tfplan
 
     deploy_docker_with_ansible:
+        if: true == false
         needs:
             - deploy_aks_with_terraform
             # - push_to_docker_registry
