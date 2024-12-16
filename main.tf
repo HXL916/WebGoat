@@ -251,15 +251,6 @@ EOF
   }
 }
 
-resource "grafana_contact_point" "contact_point" {
-  name = "Grafana Discord Alerts"
-
-  discord {
-    url = "https://discord.com/api/webhooks/1315056781248172064/oLlUZgFBHnyBcLM3mOoTJ8C4wx4uFbnTFKPh4_E8WIKgfrAisxgzHB-Nnih5uAtPgU43"
-    message = "{{ len .Alerts.Firing }} new metric alert!"
-  }
-}
-
 resource "helm_release" "kubecost" {
   name             = "kubecost"
   chart            = "cost-analyzer"
