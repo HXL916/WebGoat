@@ -58,3 +58,5 @@ TestClass.class
 
 webgoat.gitconfig
 /.history
+/.terraform
+.terraform*

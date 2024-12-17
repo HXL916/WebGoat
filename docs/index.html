@@ -3,12 +3,130 @@
 
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0;url=https://owasp.org/www-project-webgoat/" />
-  <link rel="canonical" href="https://owasp.org/www-project-webgoat/" />
+  <title>WebGoat Project</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    h2, h3 {
+      color: #555;
+    }
+    code {
+      background-color: #eee;
+      padding: 2px 4px;
+      font-size: 1.1em;
+    }
+    pre {
+      background-color: #eee;
+      padding: 10px;
+      border-left: 4px solid #333;
+      overflow-x: auto;
+    }
+    a {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    #readme-container {
+      margin-top: 20px;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
+
 <body>
-<h1>
-  The page been moved to <a href="https://owasp.org/www-project-webgoat/">https://owasp.org/www-project-webgoat/</a>
-</h1>
+  <div class="container">
+    <h1>WebGoat Project</h1>
+
+    <h3>Version Information</h3>
+    <p>
+      This version of WebGoat is used as part of the <strong>LOG8100</strong> course: 
+      <em>DevSecOps - Opérations et dév. logiciel sécur</em>.
+      The project focuses on integrating CI/CD pipelines and security best practices in Kubernetes environments.
+    </p>
+
+    <h3>Link to Original WebGoat</h3>
+    <p>
+      For the source code of the original WebGoat project, visit the official GitHub repository: 
+      <a href="https://github.com/WebGoat/WebGoat" target="_blank">WebGoat GitHub</a>
+    </p>
+
+    <h3>For More Information</h3>
+    <p>
+      To learn more about the WebGoat project, visit the official OWASP WebGoat page: 
+      <a href="https://owasp.org/www-project-webgoat/" target="_blank">OWASP WebGoat</a>
+    </p>
+
+    <div id="readme-container">
+      <p><a href="https://github.com/WebGoat/WebGoat/actions/workflows/build.yml"><img src="https://github.com/WebGoat/WebGoat/actions/workflows/build.yml/badge.svg?branch=develop" alt="Build"></a>
+        <a href="https://jdk.java.net/"><img src="https://img.shields.io/badge/java%20jdk-21-green.svg" alt="java-jdk"></a>
+        <a href="https://owasp.org/projects/"><img src="https://img.shields.io/badge/OWASP-Lab%20project-f7b73c.svg" alt="OWASP Labs"></a>
+        <a href="https://github.com/WebGoat/WebGoat/releases/latest"><img src="https://img.shields.io/github/release/WebGoat/WebGoat.svg" alt="GitHub release"></a>
+        <a href="https://gitter.im/OWASPWebGoat/community?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge"><img src="https://badges.gitter.im/OWASPWebGoat/community.svg" alt="Gitter"></a>
+        <a href="https://github.com/WebGoat/WebGoat/discussions"><img src="https://img.shields.io/github/discussions/WebGoat/WebGoat" alt="Discussions"></a>
+        <a href="https://conventionalcommits.org"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&amp;logoColor=white" alt="Conventional Commits"></a></p>
+        <h2 id="sonarcloud">SonarCloud</h2>
+        <p><a href="https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat"><img src="https://sonarcloud.io/images/project_badges/sonarcloud-white.svg" alt="SonarCloud"></a><br>
+        <a href="https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat"><img src="https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&amp;metric=alert_status" alt="Quality Gate Status"></a><br><a href="https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat"><img src="https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&amp;metric=coverage" alt="Coverage"></a><br><a href="https://sonarcloud.io/summary/new_code?id=LOG8100_WebGoat"><img src="https://sonarcloud.io/api/project_badges/measure?project=LOG8100_WebGoat&amp;metric=reliability_rating" alt="Reliability Rating"></a></p>
+        <h2 id="introduction">Introduction</h2>
+        <p>This repository is a <strong>school project</strong> for the course <em>LOG8100: DevSecOps - Opérations et dév. logiciel sécur</em> and focuses on the integration of CI/CD pipelines and security best practices in Kubernetes environments. The project builds upon the original WebGoat repository by integrating additional workflows for a secure, automated deployment process in Kubernetes.</p>
+        <h2 id="ci-cd-pipeline-steps">CI/CD pipeline steps</h2>
+        <p>The pipeline is triggered when a <strong>deployment</strong> event is happening.</p>
+        <h3 id="docker-image-build-and-vulnerability-scan">Docker Image build and vulnerability scan</h3>
+        <p>The first step in the pipeline is to build the project and create a Docker image.<br>Afterwards, we perform a vulnerability scan on the image using Trivy and push the image to Docker Hub. The result of the Trivy scan is uploaded as an artifact and will remain in the repository for 30 days (Usually we would stop the deployment if the scan found any <strong>High</strong> or <strong>Critical</strong> vulnerabilities but here we continue the deployment to prove that our CI/CD pipeline works).</p>
+        <h3 id="deploy-aks-cluster-with-terraform">Deploy AKS Cluster with Terraform</h3>
+        <p>After pushing the new version of our Docker image to the Docker Hub, we log in to Azure using a service principal. Once logged in, we verify if there&#39;s already an existing AKS and workspace resources from a previous deployment and delete them if they exist (we could also choose to keep the previous deployment in case we introduced a problem and need to do a rollback but here we delete the previous resources because we have limited Azure credits).<br>Once the previous resources are deleted, we initialize Terraform and validate the script configuration in <em>main.tf</em> before applying it to deploy the AKS cluster.</p>
+        <h3 id="deploy-docker-container-with-ansible">Deploy Docker container with Ansible</h3>
+        <p>Once the AKS cluster is deployed, we install Ansible and the required collections in the VM running the workflow and we use the Ansible playbook _azure_configure<em>aks.yml</em> to deploy the Docker container to the AKS cluster using the image we pushed to Docker Hub in the first step as well as install <strong>Prometheus</strong> and <strong>Grafana</strong> and set them up to monitor the new AKS cluster.</p>
+        <h2 id="kubernetes-cluster-configuration">Kubernetes Cluster configuration</h2>
+        <p>Cluster details:</p>
+        <ul>
+        <li>Name: <code>webGoatCluster</code></li>
+        <li>Region: <code>Canada Central</code></li>
+        <li>VM Size: <code>Standard_B1ms</code></li>
+        <li>Auto-scaling: between 1 and 3 nodes based on traffic</li>
+        </ul>
+        <p>Log Analytics:</p>
+        <ul>
+        <li>A log analytics workspace (<code>aks-log-workspace</code>) is created for monitoring</li>
+        </ul>
+        <h2 id="terraform-manual-installation">Terraform manual installation</h2>
+        <p>The execution of the Terraform script is entirely automated in the Github Action but if you need to run it locally for any reason here are the recommended steps:</p>
+        <ul>
+        <li>Install the latest version of Terraform CLI</li>
+        <li>Initializes a working directory to use with Terraform using <code>terraform init</code></li>
+        <li>Optionally, use <code>terraform validate</code> to check the configuration file for syntax errors</li>
+        <li>Optionally, run <code>terraform plan</code> to preview the changes Terraform will make to your infrastructure before applying them</li>
+        <li>Finally, apply the changes using <code>terraform apply</code></li>
+        </ul>
+        <p>When running <code>terraform init</code>, <code>terraform plan</code> and <code>terraform apply</code>, you need to pass some variables which are needed for the script to log in to Azure. Before running these commands, get the following secrets and store them in a <code>.tfvars</code> file:</p>
+        <pre><code><span class="hljs-attr">ARM_SUBSCRIPTION_ID</span>=<span class="hljs-string">"your-subscription-id"</span>
+        <span class="hljs-attr">ARM_CLIENT_ID</span>=<span class="hljs-string">"your-client-id"</span>
+        <span class="hljs-attr">ARM_CLIENT_SECRET</span>=<span class="hljs-string">"your-client-secret"</span>
+        <span class="hljs-attr">ARM_TENANT_ID</span>=<span class="hljs-string">"your-tenant-id"</span>
+        </code></pre><p>Afterwards, you can run the command with <code>terraform init -var-file=&quot;terraform.tfvars&quot;</code></p>
+        
+    </div>
+
+  </div>
 </body>
+
 </html>
